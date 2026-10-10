@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('My library')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('dashboard')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Hello, <span class="gradient-text" th:text="${me.fullName.split(' ')[0]}">Reader</span> 👋</h1>
+      <p>Here's what's on your shelf today.</p>
+    </div>
+    <a th:href="@{/books}" class="btn btn-primary" id="btn-browse">+ Borrow a book</a>
+  </div>
+
+  <div class="fine-banner" th:if="${outstanding > 0}">
+    <div class="big">💸</div>
+    <div>
+      <strong>You have an outstanding fine of ₹<span th:text="${outstanding}">0</span></strong>
+      <div class="faint">Fines are charged at ₹<span th:text="${perDay}"></span>/day after the due date. Pay at the library desk. Borrowing is paused until fines are cleared.</div>
+    </div>
+  </div>
+  <div class="alert alert-success" th:if="${readyCount > 0}">🎉 A book you reserved is ready! Issue it from the catalogue before the hold expires.</div>
+
+  <div class="stats">
+    <div class="stat glass" style="--c:var(--primary)"><span class="stat-icon">📚</span><div class="stat-label">Books on loan</div><div class="stat-value"><span th:text="${active.size()}">0</span><small class="faint">/<span th:text="${maxLoans}">3</span></small></div><div class="stat-sub">Loan limit</div></div>
+    <div class="stat glass" style="--c:var(--danger)"><span class="stat-icon">⏰</span><div class="stat-label">Overdue</div><div class="stat-value" th:text="${overdueCount}">0</div><div class="stat-sub">Return ASAP</div></div>
+    <div class="stat glass" style="--c:var(--accent)"><span class="stat-icon">💰</span><div class="stat-label">Fines due</div><div class="stat-value">₹<span th:text="${outstanding}">0</span></div><div class="stat-sub">Including accruing</div></div>
+    <div class="stat glass" style="--c:var(--success)"><span class="stat-icon">📖</span><div class="stat-label">Books read</div><div class="stat-value" th:text="${history.size()}">0</div><div class="stat-sub">All-time returns</div></div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="stack">
+      <!-- Current loans -->
+      <section class="glass card">
+        <div class="card-head"><h2>Current loans</h2><span class="faint" th:text="${active.size()} + ' active'"></span></div>
+        <div th:if="${active.isEmpty()}" class="empty"><div class="big">📭</div><p>No books on loan. <a th:href="@{/books}">Browse the catalogue</a></p></div>
+        <div class="loan" th:each="i : ${active}" th:classappend="${i.overdue}?'overdue'">
+          <div th:replace="~{fragments :: cover(${i.book}, '')}"></div>
+          <div class="loan-body">
+            <strong th:text="${i.book.title}">Title</strong>
+            <div class="faint" th:text="${i.book.author}">Author</div>
+            <div class="faint">
+              Issued <span th:text="${#temporals.format(i.issueDate, 'dd MMM yyyy')}"></span> · Due <b th:text="${#temporals.format(i.dueDate, 'dd MMM yyyy')}"></b>
+            </div>
+            <div class="progress"><span th:style="'width:' + ${i.loanProgress} + '%'"></span></div>
+          </div>
+          <div style="text-align:right;display:flex;flex-direction:column;gap:.45rem;align-items:flex-end">
+            <span th:if="${i.overdue}" class="pill pill-danger" th:text="${i.daysOverdue} + 'd late · ₹' + ${i.currentFine(perDay)}">late</span>
+            <span th:unless="${i.overdue}" class="pill pill-info" th:text="${i.daysLeft} + ' days left'">days left</span>
+            <div class="actions">
+              <form th:unless="${i.overdue}" th:action="@{/issues/{id}/renew(id=${i.id})}" method="post" class="inline">
+                <button class="btn btn-sm btn-ghost" type="submit" th:id="'renew-' + ${i.id}">Renew</button>
+              </form>
+              <form th:action="@{/issues/{id}/return(id=${i.id})}" method="post" class="inline"
+                    th:attr="data-confirm=${i.overdue} ? 'Return “' + ${i.book.title} + '”? A fine of ₹' + ${i.currentFine(perDay)} + ' will be generated.' : 'Return “' + ${i.book.title} + '”?'">
+                <button class="btn btn-sm btn-primary" type="submit" th:id="'return-' + ${i.id}">Return</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- History -->
+      <section class="glass card">
+        <div class="card-head"><h2>Borrowing history</h2></div>
+        <div th:if="${history.isEmpty()}" class="empty"><p>No returned books yet.</p></div>
+        <div class="table-wrap" th:unless="${history.isEmpty()}">
+          <table>
+            <thead><tr><th>Book</th><th>Issued</th><th>Returned</th><th>Fine</th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${history}">
+              <td><div class="cell-book"><div th:replace="~{fragments :: cover(${i.book}, 'cover-mini')}"></div><div><strong th:text="${i.book.title}"></strong><span class="faint" th:text="${i.book.author}"></span></div></div></td>
+              <td th:text="${#temporals.format(i.issueDate, 'dd MMM')}"></td>
+              <td th:text="${#temporals.format(i.returnDate, 'dd MMM')}"></td>
+              <td>
+                <span th:if="${i.fine == 0}" class="pill pill-success">On time</span>
+                <span th:if="${i.fine > 0 and i.finePaid}" class="pill pill-muted" th:text="'₹' + ${i.fine} + ' paid'"></span>
+                <span th:if="${i.fine > 0 and !i.finePaid}" class="pill pill-danger" th:text="'₹' + ${i.fine} + ' unpaid'"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <!-- Bookings -->
+      <section class="glass card">
+        <div class="card-head"><h3>Advance bookings</h3></div>
+        <div th:if="${bookings.isEmpty()}" class="faint">No bookings. Reserve a book that's out of stock and we'll hold the next copy for you.</div>
+        <div class="loan" th:each="r : ${bookings}">
+          <div class="loan-body">
+            <strong th:text="${r.book.title}"></strong>
+            <div class="faint" th:if="${r.status.name() == 'WAITING'}" th:text="'Queue position #' + ${positions.get(r.id)}"></div>
+            <div class="faint" th:if="${r.status.name() == 'READY'}" th:text="'Held for you until ' + ${#temporals.format(r.holdUntil, 'dd MMM')}"></div>
+            <div class="faint" th:unless="${r.active}" th:text="${#temporals.format(r.createdAt, 'dd MMM yyyy')}"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
+            <span class="pill" th:text="${r.status}"
+                  th:classappend="${r.status.name()=='READY'}?'pill-success':(${r.status.name()=='WAITING'}?'pill-warning':'pill-muted')"></span>
+            <form th:if="${r.active}" th:action="@{/reservations/{id}/cancel(id=${r.id})}" method="post" data-confirm="Cancel this booking?">
+              <button class="btn btn-sm btn-ghost" type="submit">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- My queries -->
+      <section class="glass card">
+        <div class="card-head"><h3>My queries</h3><a th:href="@{/contact}" class="btn btn-sm">New</a></div>
+        <div th:if="${myMessages.isEmpty()}" class="faint">No messages sent yet.</div>
+        <div th:each="m : ${myMessages}" style="margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;gap:.5rem"><strong th:text="${m.subject}"></strong>
+            <span class="pill" th:classappend="${m.resolved}?'pill-success':'pill-warning'" th:text="${m.resolved}?'Resolved':'Open'"></span></div>
+          <div class="reply" th:if="${m.adminReply}" style="margin-top:.5rem"><b>Librarian:</b> <span th:text="${m.adminReply}"></span></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

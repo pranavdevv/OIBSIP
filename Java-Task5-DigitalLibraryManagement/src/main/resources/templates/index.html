@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Your digital library')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('home')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <section class="hero">
+    <div>
+      <span class="eyebrow">✨ Smart circulation · Auto fines · Advance booking</span>
+      <h1>Your library,<br><span class="gradient-text">beautifully organised.</span></h1>
+      <p class="lead">Browse the catalogue, borrow in one click, reserve books that are out, and keep track of due dates and fines, all in one place.</p>
+      <div class="hero-cta">
+        <th:block sec:authorize="isAnonymous()">
+          <a th:href="@{/register}" class="btn btn-primary btn-lg" id="hero-register">Create free account →</a>
+          <a th:href="@{/login}" class="btn btn-lg" id="hero-login">Sign in</a>
+        </th:block>
+        <th:block sec:authorize="hasRole('USER')">
+          <a th:href="@{/books}" class="btn btn-primary btn-lg">Browse catalogue →</a>
+          <a th:href="@{/dashboard}" class="btn btn-lg">My library</a>
+        </th:block>
+        <th:block sec:authorize="hasRole('ADMIN')">
+          <a th:href="@{/admin}" class="btn btn-primary btn-lg">Open admin console →</a>
+        </th:block>
+      </div>
+    </div>
+    <div class="shelf" aria-hidden="true">
+      <div class="cover" style="--h:265"><div class="cover-title">Clean Code</div><div class="cover-author">Robert C. Martin</div></div>
+      <div class="cover" style="--h:20"><div class="cover-title">Wings of Fire</div><div class="cover-author">A.P.J. Abdul Kalam</div></div>
+      <div class="cover" style="--h:170"><div class="cover-title">Sapiens</div><div class="cover-author">Yuval Noah Harari</div></div>
+    </div>
+  </section>
+
+  <div class="counter-row">
+    <div class="counter glass"><b data-count="0" th:attr="data-count=${bookCount}">0</b><span>Titles</span></div>
+    <div class="counter glass"><b data-count="0" th:attr="data-count=${copyCount}">0</b><span>Copies on record</span></div>
+    <div class="counter glass"><b data-count="0" th:attr="data-count=${categoryCount}">0</b><span>Categories</span></div>
+    <div class="counter glass"><b data-count="0" th:attr="data-count=${memberCount}">0</b><span>Members</span></div>
+  </div>
+
+  <section class="block">
+    <h2>Everything a modern library needs</h2>
+    <p class="muted">Separate member and librarian experiences, all backed by a real database.</p>
+    <div class="feature-grid">
+      <div class="feature glass"><div class="icon">🔎</div><h3>Search &amp; browse</h3><p>Filter by category and search instantly by title, author or ISBN.</p></div>
+      <div class="feature glass"><div class="icon">📖</div><h3>One-click issue</h3><p>Borrow a book with a 14-day due date. Stock updates in real time.</p></div>
+      <div class="feature glass"><div class="icon">⏳</div><h3>Advance booking</h3><p>Join a queue for issued books. A copy is held for you for 3 days when it comes back.</p></div>
+      <div class="feature glass"><div class="icon">₹</div><h3>Automatic fines</h3><p>Late returns are charged ₹5/day automatically. The librarian marks fines as paid.</p></div>
+      <div class="feature glass"><div class="icon">🛡️</div><h3>Secure accounts</h3><p>BCrypt-hashed passwords, role-based access and CSRF protection.</p></div>
+      <div class="feature glass"><div class="icon">💬</div><h3>Ask the librarian</h3><p>Send queries through the contact form. Replies show up on your dashboard.</p></div>
+    </div>
+  </section>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

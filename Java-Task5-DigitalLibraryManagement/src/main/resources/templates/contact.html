@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Contact the librarian')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('contact')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Contact the librarian</h1>
+      <p>Book requests, account issues or feedback. We usually reply within a day.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="glass card">
+      <form th:action="@{/contact}" th:object="${msg}" method="post" id="contact-form" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="name">Your name</label>
+            <input class="input" th:field="*{name}" th:classappend="${#fields.hasErrors('name')}?'invalid'">
+            <div class="error-text" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input class="input" type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')}?'invalid'">
+            <div class="error-text" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="subject">Subject</label>
+          <input class="input" th:field="*{subject}" th:classappend="${#fields.hasErrors('subject')}?'invalid'" placeholder="e.g. Request to add a new title">
+          <div class="error-text" th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}"></div>
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea class="input" th:field="*{message}" th:classappend="${#fields.hasErrors('message')}?'invalid'" placeholder="How can we help?"></textarea>
+          <div class="error-text" th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="btn-send">Send message ✉️</button>
+      </form>
+    </div>
+    <div class="glass card">
+      <h3>📍 Visit us</h3>
+      <p class="muted">Lumina Central Library<br>MG Road, Bengaluru 560001</p>
+      <h3>🕘 Hours</h3>
+      <p class="muted">Mon–Sat · 9:00 AM – 8:00 PM<br>Sunday · Closed</p>
+      <h3>📏 Borrowing rules</h3>
+      <p class="muted">Up to 3 books at a time · 14-day loan · ₹5 per day late fee · Reserved copies are held for 3 days.</p>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

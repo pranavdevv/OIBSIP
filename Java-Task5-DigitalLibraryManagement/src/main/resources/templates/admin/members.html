@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Members')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('members')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Members Directory 👥</h1>
+      <p>Manage users, their permissions, and view borrowing histories.</p>
+    </div>
+  </div>
+
+  <div class="glass card table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Contact</th>
+          <th>Role / Status</th>
+          <th>Active Loans</th>
+          <th>Outstanding Fines</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="u : ${members}">
+          <td>
+             <div style="display:flex; align-items:center; gap: 0.5rem">
+                 <div class="avatar" th:text="${u.initials}" style="width:30px; height:30px; font-size:0.8rem"></div>
+                 <strong><a th:href="@{/admin/members/{id}(id=${u.id})}" th:text="${u.fullName}" style="color:var(--text); text-decoration:none"></a></strong>
+             </div>
+          </td>
+          <td>
+              <div th:text="${u.email}"></div>
+              <div class="faint" th:text="${u.phone}"></div>
+          </td>
+          <td>
+              <span class="pill" th:classappend="${u.admin} ? 'pill-primary' : 'pill-info'" th:text="${u.role}"></span>
+              <span class="pill pill-danger" th:unless="${u.active}">Deactivated</span>
+          </td>
+          <td th:text="${loans.get(u.id)}"></td>
+          <td>
+              <span th:if="${fines.get(u.id) > 0}" class="pill pill-danger" th:text="'₹' + ${fines.get(u.id)}"></span>
+              <span th:unless="${fines.get(u.id) > 0}" class="faint">₹0</span>
+          </td>
+          <td>
+              <a th:href="@{/admin/members/{id}(id=${u.id})}" class="btn btn-sm btn-ghost">View</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

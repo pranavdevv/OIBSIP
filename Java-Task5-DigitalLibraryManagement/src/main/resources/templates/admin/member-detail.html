@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${member.fullName})}"></head>
+<body>
+<header th:replace="~{fragments :: nav('members')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <a th:href="@{/admin/members}" class="btn btn-sm btn-ghost">← Back to Members</a>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="stack">
+      <section class="glass card">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding: 2rem 0">
+            <div class="avatar" th:text="${member.initials}" style="width:80px; height:80px; font-size:2rem; margin-bottom:1rem"></div>
+            <h2 th:text="${member.fullName}" style="margin:0 0 0.5rem"></h2>
+            <div class="faint" th:text="${member.email}"></div>
+            <div class="faint" th:text="${member.phone}"></div>
+            <div style="margin-top: 1rem">
+                <span class="pill" th:classappend="${member.admin} ? 'pill-primary' : 'pill-info'" th:text="${member.role}"></span>
+                <span class="pill pill-danger" th:unless="${member.active}">Deactivated</span>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem">
+            <div style="display:flex; justify-content:space-between">
+                <span class="faint">Joined</span>
+                <strong th:text="${#temporals.format(member.createdAt, 'dd MMM yyyy')}"></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between">
+                <span class="faint">Outstanding Fines</span>
+                <strong style="color:var(--danger)" th:text="'₹' + ${outstanding}"></strong>
+            </div>
+        </div>
+        <div style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem; display:flex; gap:0.5rem; flex-direction:column">
+            <form th:action="@{/admin/members/{id}/toggle(id=${member.id})}" method="post">
+                <button type="submit" class="btn btn-sm" th:classappend="${member.active} ? 'btn-ghost' : 'btn-success'" style="width:100%"
+                        th:text="${member.active} ? 'Deactivate Account' : 'Reactivate Account'"></button>
+            </form>
+            <form th:action="@{/admin/members/{id}/delete(id=${member.id})}" method="post"
+                  th:attr="data-confirm='Permanently delete ' + ${member.fullName} + '?'">
+                <button type="submit" class="btn btn-sm btn-ghost" style="width:100%; color:var(--danger)">Delete Account</button>
+            </form>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack" style="grid-column: span 2;">
+      <section class="glass card">
+        <div class="card-head">
+            <h2>Borrowing History</h2>
+            <span class="faint" th:text="${memberIssues.size()} + ' records'"></span>
+        </div>
+        <div th:if="${memberIssues.isEmpty()}" class="empty"><p>No borrowing history.</p></div>
+        <div class="table-wrap" th:unless="${memberIssues.isEmpty()}">
+            <table>
+                <thead><tr><th>Book</th><th>Issued</th><th>Returned</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr th:each="i : ${memberIssues}">
+                        <td><strong th:text="${i.book.title}"></strong></td>
+                        <td th:text="${#temporals.format(i.issueDate, 'dd MMM yy')}"></td>
+                        <td>
+                            <span th:if="${i.returnDate != null}" th:text="${#temporals.format(i.returnDate, 'dd MMM yy')}"></span>
+                            <span th:if="${i.returnDate == null}" class="faint">Pending</span>
+                        </td>
+                        <td>
+                            <span th:if="${i.returnDate == null}">
+                                <span th:if="${i.overdue}" class="pill pill-danger" th:text="'Late (₹' + ${i.currentFine(perDay)} + ')'"></span>
+                                <span th:unless="${i.overdue}" class="pill pill-info">Active</span>
+                            </span>
+                            <span th:if="${i.returnDate != null}">
+                                <span th:if="${i.fine == 0}" class="pill pill-success">Clear</span>
+                                <span th:if="${i.fine > 0 and i.finePaid}" class="pill pill-muted" th:text="'Fine Paid'"></span>
+                                <span th:if="${i.fine > 0 and !i.finePaid}" class="pill pill-danger" th:text="'Unpaid ₹' + ${i.fine}"></span>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+      </section>
+
+      <section class="glass card">
+        <div class="card-head">
+            <h2>Advance Bookings</h2>
+        </div>
+        <div th:if="${memberBookings.isEmpty()}" class="empty"><p>No reservations.</p></div>
+        <div class="loan" th:each="r : ${memberBookings}">
+            <div class="loan-body">
+                <strong th:text="${r.book.title}"></strong>
+                <div class="faint" th:text="'Requested on ' + ${#temporals.format(r.createdAt, 'dd MMM yyyy')}"></div>
+            </div>
+            <div style="text-align:right">
+                <span class="pill" th:text="${r.status}"
+                      th:classappend="${r.status.name()=='READY'}?'pill-success':(${r.status.name()=='WAITING'}?'pill-warning':'pill-muted')"></span>
+            </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Admin Dashboard')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('admin')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Library Overview 📊</h1>
+      <p>Quick snapshot of Lumina library's current metrics and operations.</p>
+    </div>
+    <div style="display:flex; gap: 0.5rem">
+        <a th:href="@{/admin/books/new}" class="btn btn-primary">+ Add Book</a>
+        <a th:href="@{/admin/issues}" class="btn btn-ghost">Circulation</a>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat glass" style="--c:var(--primary)"><span class="stat-icon">📚</span><div class="stat-label">Total Books</div><div class="stat-value"><span th:text="${bookCount}">0</span><small class="faint">/ <span th:text="${copyCount}">0</span> c</small></div><div class="stat-sub">Titles / Copies</div></div>
+    <div class="stat glass" style="--c:var(--info)"><span class="stat-icon">👥</span><div class="stat-label">Members</div><div class="stat-value" th:text="${memberCount}">0</div><div class="stat-sub">Active users</div></div>
+    <div class="stat glass" style="--c:var(--warning)"><span class="stat-icon">📖</span><div class="stat-label">Circulation</div><div class="stat-value" th:text="${issuedCount}">0</div><div class="stat-sub">Books on loan</div></div>
+    <div class="stat glass" style="--c:var(--danger)"><span class="stat-icon">⏰</span><div class="stat-label">Overdue</div><div class="stat-value" th:text="${overdueCount}">0</div><div class="stat-sub">Action required</div></div>
+    <div class="stat glass" style="--c:var(--accent)"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value">₹<span th:text="${collectedFines}">0</span></div><div class="stat-sub">Fines collected</div></div>
+    <div class="stat glass" style="--c:var(--success)"><span class="stat-icon">📅</span><div class="stat-label">Bookings</div><div class="stat-value" th:text="${bookingCount}">0</div><div class="stat-sub">Active reservations</div></div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="stack">
+      <section class="glass card">
+        <div class="card-head"><h2>Overdue issues</h2><a th:href="@{/admin/issues?filter=overdue}" class="btn btn-sm">View all</a></div>
+        <div th:if="${overdue.isEmpty()}" class="empty"><p>No overdue issues.</p></div>
+        <div class="table-wrap" th:unless="${overdue.isEmpty()}">
+          <table>
+            <thead><tr><th>Book</th><th>Member</th><th>Due</th><th>Fine</th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${overdue}" class="overdue">
+              <td class="ellipsis" th:text="${i.book.title}"></td>
+              <td th:text="${i.user.fullName}"></td>
+              <td th:text="${#temporals.format(i.dueDate, 'dd MMM')}"></td>
+              <td><span class="pill pill-danger" th:text="'₹' + ${i.currentFine(perDay)}"></span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="glass card">
+        <div class="card-head"><h2>Category breakdown</h2><a th:href="@{/admin/books}" class="btn btn-sm">Catalogue</a></div>
+        <div th:if="${perCategory.isEmpty()}" class="empty"><p>No books available.</p></div>
+        <div th:unless="${perCategory.isEmpty()}" style="padding: 1rem 0; display:flex; flex-direction:column; gap:0.5rem">
+            <div th:each="entry : ${perCategory}" style="display:flex; align-items:center; gap: 1rem">
+                <div style="flex:1" th:text="${entry.key}"></div>
+                <div style="flex:3; background: var(--glass-bg); border-radius:10px; overflow:hidden">
+                    <div style="height: 10px; background: var(--primary); transition: width 0.3s ease" th:styleappend="'width: ' + (${entry.value} * 100 / ${maxCat}) + '%'"></div>
+                </div>
+                <div style="width:30px; text-align:right" class="faint" th:text="${entry.value}"></div>
+            </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="glass card">
+        <div class="card-head"><h2>Recent activity</h2><a th:href="@{/admin/issues}" class="btn btn-sm">All issues</a></div>
+        <div th:if="${recent.isEmpty()}" class="empty"><p>No recent activity.</p></div>
+        <div class="loan" th:each="i : ${recent}">
+            <div class="loan-body">
+                <strong th:text="${i.book.title}"></strong>
+                <div class="faint">Issued to <span th:text="${i.user.fullName}"></span> on <span th:text="${#temporals.format(i.issueDate, 'dd MMM yyyy')}"></span></div>
+            </div>
+            <div style="text-align:right">
+                <span th:replace="~{fragments :: status(${i})}"></span>
+            </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

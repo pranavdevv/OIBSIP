@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!-- ============ <head> ============ -->
+<head th:fragment="head(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title} + ' · Lumina Library'">Lumina Library</title>
+  <meta name="description" content="Lumina — a digital library management system to browse, issue, return and reserve books with automatic fine tracking.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<!-- ============ navbar ============ -->
+<header th:fragment="nav(active)" class="nav">
+  <div class="container nav-inner">
+    <a th:href="@{/}" class="brand" id="nav-brand">
+      <span class="brand-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5a2.5 2.5 0 0 0 0 5H19"/></svg></span>
+      Lumina
+    </a>
+
+    <button class="btn btn-sm nav-toggle" aria-label="Menu">☰</button>
+
+    <nav class="nav-links">
+      <th:block sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin}" th:classappend="${active=='admin'}?'active'" id="nav-admin">Dashboard</a>
+        <a th:href="@{/admin/books}" th:classappend="${active=='abooks'}?'active'" id="nav-abooks">Books</a>
+        <a th:href="@{/admin/issues}" th:classappend="${active=='aissues'}?'active'" id="nav-aissues">Circulation</a>
+        <a th:href="@{/admin/members}" th:classappend="${active=='members'}?'active'" id="nav-members">Members</a>
+        <a th:href="@{/admin/fines}" th:classappend="${active=='fines'}?'active'" id="nav-fines">Fines</a>
+        <a th:href="@{/admin/messages}" th:classappend="${active=='messages'}?'active'" id="nav-messages">Queries<span class="badge-dot" th:if="${openMessages > 0}" th:text="${openMessages}">2</span></a>
+      </th:block>
+      <th:block sec:authorize="hasRole('USER')">
+        <a th:href="@{/dashboard}" th:classappend="${active=='dashboard'}?'active'" id="nav-dashboard">My Library</a>
+        <a th:href="@{/books}" th:classappend="${active=='books'}?'active'" id="nav-books">Catalogue</a>
+        <a th:href="@{/contact}" th:classappend="${active=='contact'}?'active'" id="nav-contact">Contact</a>
+      </th:block>
+      <th:block sec:authorize="isAnonymous()">
+        <a th:href="@{/}" th:classappend="${active=='home'}?'active'">Home</a>
+        <a th:href="@{/contact}" th:classappend="${active=='contact'}?'active'">Contact</a>
+      </th:block>
+    </nav>
+
+    <div class="nav-right">
+      <th:block sec:authorize="isAuthenticated()" th:if="${me != null}">
+        <div class="user-chip">
+          <div class="avatar" th:text="${me.initials}">PK</div>
+          <div><strong th:text="${me.fullName}">Name</strong><small th:text="${me.admin} ? 'Administrator' : 'Member'">Member</small></div>
+        </div>
+        <form th:action="@{/logout}" method="post" class="inline">
+          <button class="btn btn-sm btn-ghost" id="btn-logout" type="submit">Log out</button>
+        </form>
+      </th:block>
+      <th:block sec:authorize="isAnonymous()">
+        <a th:href="@{/login}" class="btn btn-sm btn-ghost" id="nav-login">Sign in</a>
+        <a th:href="@{/register}" class="btn btn-sm btn-primary" id="nav-register">Join free</a>
+      </th:block>
+    </div>
+  </div>
+</header>
+
+<!-- ============ flash toasts ============ -->
+<div th:fragment="flash" class="toast-stack">
+  <div class="toast toast-success" th:if="${success}"><span>✅</span><span th:text="${success}"></span><button aria-label="close">×</button></div>
+  <div class="toast toast-warning" th:if="${warning}"><span>⚠️</span><span th:text="${warning}"></span><button aria-label="close">×</button></div>
+  <div class="toast toast-error" th:if="${error}"><span>⛔</span><span th:text="${error}"></span><button aria-label="close">×</button></div>
+</div>
+
+<!-- ============ footer, modal, scripts ============ -->
+<th:block th:fragment="footer">
+  <footer class="footer">
+    <div class="container">
+      <span>© 2026 Lumina Digital Library · Built with Spring Boot, Thymeleaf &amp; SQLite</span>
+      <span>OIBSIP · Java Development · Task 5</span>
+    </div>
+  </footer>
+  <div class="modal-back" id="confirm-modal">
+    <div class="modal glass">
+      <h3>Please confirm</h3>
+      <p class="muted" id="confirm-text">Are you sure?</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirm-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="confirm-ok" type="button">Yes, continue</button>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/app.js}"></script>
+</th:block>
+
+<!-- ============ book cover ============ -->
+<div th:fragment="cover(book, cls)" class="cover" th:classappend="${cls}" th:style="'--h:' + ${book.hue}">
+  <div class="cover-title" th:text="${book.title}">Title</div>
+  <div class="cover-author" th:text="${book.author}">Author</div>
+</div>
+
+<!-- ============ issue status pill ============ -->
+<span th:fragment="status(i)" class="pill"
+      th:classappend="${i.status=='OVERDUE'} ? 'pill-danger' : (${i.status=='RETURNED'} ? 'pill-muted' : 'pill-info')"
+      th:text="${i.status}">ISSUED</span>
+
+</body>
+</html>

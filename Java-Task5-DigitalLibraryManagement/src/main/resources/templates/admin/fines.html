@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Fines')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('fines')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Fines & Payments 💰</h1>
+      <p>Track pending fines, accruing penalties, and payment history.</p>
+    </div>
+  </div>
+
+  <div class="stats" style="margin-bottom: 2rem;">
+    <div class="stat glass" style="--c:var(--danger)"><span class="stat-icon">⚠️</span><div class="stat-label">Unpaid (Settled)</div><div class="stat-value">₹<span th:text="${unpaidTotal}">0</span></div><div class="stat-sub">Books returned, fine pending</div></div>
+    <div class="stat glass" style="--c:var(--warning)"><span class="stat-icon">📈</span><div class="stat-label">Accruing</div><div class="stat-value">₹<span th:text="${accruingTotal}">0</span></div><div class="stat-sub">From active overdue books</div></div>
+    <div class="stat glass" style="--c:var(--success)"><span class="stat-icon">✅</span><div class="stat-label">Collected</div><div class="stat-value">₹<span th:text="${paidTotal}">0</span></div><div class="stat-sub">Total revenue</div></div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="stack">
+      <section class="glass card">
+        <div class="card-head"><h2>Unpaid Fines (Books Returned)</h2></div>
+        <div th:if="${settled.stream().filter(i -> !i.finePaid).toList().isEmpty()}" class="empty"><p>No unpaid settled fines.</p></div>
+        <div class="table-wrap" th:unless="${settled.stream().filter(i -> !i.finePaid).toList().isEmpty()}">
+            <table>
+                <thead><tr><th>Member</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody>
+                <tr th:each="i : ${settled}" th:if="${!i.finePaid}">
+                    <td>
+                        <strong th:text="${i.user.fullName}"></strong>
+                        <div class="faint" th:text="${i.book.title}"></div>
+                    </td>
+                    <td><span class="pill pill-danger" th:text="'₹' + ${i.fine}"></span></td>
+                    <td>
+                        <div style="display:flex; gap:0.5rem">
+                            <form th:action="@{/admin/fines/{id}/pay(id=${i.id})}" method="post">
+                                <button type="submit" class="btn btn-sm btn-success">Mark Paid</button>
+                            </form>
+                            <form th:action="@{/admin/fines/{id}/waive(id=${i.id})}" method="post"
+                                  th:attr="data-confirm='Waive fine of ₹' + ${i.fine} + ' for ' + ${i.user.fullName} + '?'">
+                                <button type="submit" class="btn btn-sm btn-ghost">Waive</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+      </section>
+      
+      <section class="glass card">
+        <div class="card-head"><h2>Accruing Fines (Overdue Books)</h2></div>
+        <div th:if="${accruing.isEmpty()}" class="empty"><p>No accruing fines.</p></div>
+        <div class="table-wrap" th:unless="${accruing.isEmpty()}">
+            <table>
+                <thead><tr><th>Member</th><th>Current Fine</th><th>Status</th></tr></thead>
+                <tbody>
+                <tr th:each="i : ${accruing}">
+                    <td>
+                        <strong th:text="${i.user.fullName}"></strong>
+                        <div class="faint" th:text="${i.book.title}"></div>
+                    </td>
+                    <td><span class="pill pill-warning" th:text="'₹' + ${i.currentFine(perDay)}"></span></td>
+                    <td class="faint" th:text="${i.daysOverdue} + 'd late'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="glass card">
+        <div class="card-head"><h2>Payment History</h2></div>
+        <div th:if="${settled.stream().filter(i -> i.finePaid).toList().isEmpty()}" class="empty"><p>No payments recorded.</p></div>
+        <div class="table-wrap" th:unless="${settled.stream().filter(i -> i.finePaid).toList().isEmpty()}">
+            <table>
+                <thead><tr><th>Member</th><th>Paid</th><th>Date</th></tr></thead>
+                <tbody>
+                <tr th:each="i : ${settled}" th:if="${i.finePaid}">
+                    <td>
+                        <strong th:text="${i.user.fullName}"></strong>
+                        <div class="faint" th:text="${i.book.title}"></div>
+                    </td>
+                    <td><span class="pill pill-success" th:text="'₹' + ${i.fine}"></span></td>
+                    <td class="faint" th:text="${#temporals.format(i.returnDate, 'dd MMM yy')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

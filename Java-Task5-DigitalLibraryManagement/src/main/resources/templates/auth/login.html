@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Sign in')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('login')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container auth-wrap">
+  <div class="auth-card glass">
+    <h1>Welcome back 👋</h1>
+    <p class="muted">Sign in to your Lumina account.</p>
+
+    <div class="alert alert-danger" th:if="${param.error}">Invalid email or password.</div>
+    <div class="alert alert-warning" th:if="${param.disabled}">Your account has been disabled. Please contact the librarian.</div>
+    <div class="alert alert-success" th:if="${param.logout}">You have been signed out.</div>
+
+    <form th:action="@{/login}" method="post" id="login-form">
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input" type="email" id="email" name="email" required autofocus placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input class="input" type="password" id="password" name="password" required placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" type="submit" id="btn-login">Sign in</button>
+    </form>
+    <p class="faint" style="margin-top:1rem;text-align:center">New here? <a th:href="@{/register}">Create an account</a></p>
+
+    <div class="demo-creds">
+      <div class="faint" style="margin-bottom:.4rem">Demo accounts (click to fill)</div>
+      <button type="button" data-fill="admin@library.com|admin123" id="fill-admin"><span>🛡️ Admin</span><code>admin@library.com</code></button>
+      <button type="button" data-fill="user@library.com|user1234" id="fill-user"><span>👤 Member</span><code>user@library.com</code></button>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

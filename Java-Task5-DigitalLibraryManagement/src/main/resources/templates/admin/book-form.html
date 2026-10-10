@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${book.id == null ? 'Add Book' : 'Edit Book'})}"></head>
+<body>
+<header th:replace="~{fragments :: nav('abooks')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container" style="max-width: 600px;">
+  <div class="page-head">
+    <a th:href="@{/admin/books}" class="btn btn-sm btn-ghost">← Back</a>
+    <h1 th:text="${book.id == null ? 'Add New Book' : 'Edit Book'}"></h1>
+  </div>
+
+  <form th:action="@{/admin/books/save}" th:object="${book}" method="post" class="glass card stack">
+    <input type="hidden" th:field="*{id}">
+    
+    <div class="form-group">
+      <label for="title">Title *</label>
+      <input type="text" id="title" th:field="*{title}" class="form-control" required>
+      <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="author">Author *</label>
+      <input type="text" id="author" th:field="*{author}" class="form-control" required>
+      <div class="error" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="form-group">
+          <label for="isbn">ISBN *</label>
+          <input type="text" id="isbn" th:field="*{isbn}" class="form-control" placeholder="10-13 digits" required>
+          <div class="error" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}"></div>
+        </div>
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <input type="text" id="category" th:field="*{category}" class="form-control" list="cat-list" required>
+          <datalist id="cat-list">
+              <option th:each="c : ${categories}" th:value="${c}"></option>
+          </datalist>
+          <div class="error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="form-group">
+          <label for="quantity">Total Quantity *</label>
+          <input type="number" id="quantity" th:field="*{quantity}" class="form-control" min="0" max="1000" required>
+          <div class="faint" style="font-size:0.8rem; margin-top:0.25rem">If editing, increasing quantity adds to available copies.</div>
+          <div class="error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
+        </div>
+        <div class="form-group">
+          <label for="publishedYear">Publication Year</label>
+          <input type="number" id="publishedYear" th:field="*{publishedYear}" class="form-control" min="1000" max="2100">
+          <div class="error" th:if="${#fields.hasErrors('publishedYear')}" th:errors="*{publishedYear}"></div>
+        </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" th:field="*{description}" class="form-control" rows="4" maxlength="1000"></textarea>
+      <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <button type="submit" class="btn btn-primary" style="width:100%" th:text="${book.id == null ? 'Add Book' : 'Save Changes'}"></button>
+    </div>
+  </form>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

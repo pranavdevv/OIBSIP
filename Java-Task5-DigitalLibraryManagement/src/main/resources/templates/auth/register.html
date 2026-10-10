@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Create account')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('register')}"></header>
+
+<main class="container auth-wrap">
+  <div class="auth-card glass">
+    <h1>Join <span class="gradient-text">Lumina</span></h1>
+    <p class="muted">Create a free member account to start borrowing.</p>
+
+    <form th:action="@{/register}" th:object="${form}" method="post" id="register-form" novalidate>
+      <div class="field">
+        <label for="fullName">Full name</label>
+        <input class="input" th:field="*{fullName}" th:classappend="${#fields.hasErrors('fullName')}?'invalid'" placeholder="Pranav Kumar">
+        <div class="error-text" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')}?'invalid'" placeholder="you@example.com">
+          <div class="error-text" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        </div>
+        <div class="field">
+          <label for="phone">Mobile</label>
+          <input class="input" th:field="*{phone}" th:classappend="${#fields.hasErrors('phone')}?'invalid'" placeholder="9876543210" maxlength="10">
+          <div class="error-text" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input class="input" type="password" th:field="*{password}" th:classappend="${#fields.hasErrors('password')}?'invalid'" placeholder="Min 8 chars, letters + numbers">
+        <div class="error-text" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+      </div>
+      <div class="field">
+        <label for="confirmPassword">Confirm password</label>
+        <input class="input" type="password" th:field="*{confirmPassword}" th:classappend="${#fields.hasErrors('confirmPassword')}?'invalid'">
+        <div class="error-text" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" type="submit" id="btn-register">Create account</button>
+    </form>
+    <p class="faint" style="margin-top:1rem;text-align:center">Already a member? <a th:href="@{/login}">Sign in</a></p>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

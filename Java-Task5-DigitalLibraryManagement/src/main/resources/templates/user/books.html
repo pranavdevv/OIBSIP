@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Catalogue')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('books')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Book catalogue</h1>
+      <p><span th:text="${books.size()}">0</span> title(s) <span th:if="${category}">in <b th:text="${category}"></b></span><span th:if="${q}"> matching “<b th:text="${q}"></b>”</span></p>
+    </div>
+  </div>
+
+  <form class="toolbar" th:action="@{/books}" method="get" id="search-form">
+    <input type="hidden" name="category" th:value="${category}">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input class="input" name="q" th:value="${q}" placeholder="Search by title, author or ISBN…" id="search-input">
+    </div>
+    <button class="btn btn-primary" type="submit" id="btn-search">Search</button>
+    <a th:if="${q != null or category != null}" th:href="@{/books}" class="btn btn-ghost">Clear</a>
+  </form>
+
+  <div class="chips">
+    <a th:href="@{/books(q=${q})}" class="chip" th:classappend="${category == null}?'active'">All</a>
+    <a th:each="c : ${categories}" th:href="@{/books(category=${c}, q=${q})}" class="chip"
+       th:classappend="${c == category}?'active'" th:text="${c}">Category</a>
+  </div>
+
+  <div class="book-grid" th:unless="${books.isEmpty()}">
+    <article class="book-card glass" th:each="b, s : ${books}" th:style="'animation-delay:' + ${s.index * 40} + 'ms'">
+      <div th:replace="~{fragments :: cover(${b}, '')}"></div>
+      <div class="book-meta">
+        <span class="tag" th:text="${b.category}">Category</span>
+        <h3 style="margin-top:.5rem" th:text="${b.title}">Title</h3>
+        <p th:text="${b.author} + (${b.publishedYear} != null ? ' · ' + ${b.publishedYear} : '')">Author</p>
+      </div>
+      <div class="book-foot" th:with="free=${shelf.get(b.id)}">
+        <div class="avail">
+          <span th:text="${free} + ' of ' + ${b.quantity} + ' available'">2 of 3 available</span>
+          <span class="faint" th:text="'ISBN ' + ${b.isbn}"></span>
+        </div>
+        <div class="meter" th:classappend="${free == 0}?'low'">
+          <span th:style="'width:' + (${b.quantity} > 0 ? ${free * 100 / b.quantity} : 0) + '%'"></span>
+        </div>
+
+        <th:block th:switch="true">
+          <span th:case="${myLoans.contains(b.id)}" class="btn btn-success btn-block btn-sm" style="cursor:default">✓ You have this book</span>
+          <span th:case="${myBookings.contains(b.id) and free == 0}" class="btn btn-block btn-sm" style="cursor:default">⏳ Booked: in queue</span>
+          <form th:case="${free > 0}" th:action="@{/books/{id}/issue(id=${b.id})}" method="post"
+                th:attr="data-confirm='Issue “' + ${b.title} + '”? It will be due in 14 days.'">
+            <button class="btn btn-primary btn-block btn-sm" type="submit" th:id="'issue-' + ${b.id}">Issue book</button>
+          </form>
+          <form th:case="*" th:action="@{/books/{id}/reserve(id=${b.id})}" method="post">
+            <button class="btn btn-accent btn-block btn-sm" type="submit" th:id="'reserve-' + ${b.id}">Reserve (advance booking)</button>
+          </form>
+        </th:block>
+      </div>
+    </article>
+  </div>
+
+  <div class="glass empty" th:if="${books.isEmpty()}">
+    <div class="big">🔍</div>
+    <h3>No books found</h3>
+    <p>Try a different search term or category.</p>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Circulation')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('aissues')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container">
+  <div class="page-head">
+    <div>
+      <h1>Circulation Desk 🔄</h1>
+      <p>Manage active issues, returns, and advance bookings.</p>
+    </div>
+  </div>
+
+  <div class="tabs" style="margin-bottom: 2rem;">
+      <a th:href="@{/admin/issues?filter=active}" class="btn" th:classappend="${filter == 'active'} ? 'btn-primary' : 'btn-ghost'">Active Loans</a>
+      <a th:href="@{/admin/issues?filter=overdue}" class="btn" th:classappend="${filter == 'overdue'} ? 'btn-primary' : 'btn-ghost'">Overdue</a>
+      <a th:href="@{/admin/issues?filter=all}" class="btn" th:classappend="${filter == 'all'} ? 'btn-primary' : 'btn-ghost'">All History</a>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="stack" style="grid-column: span 2;">
+      <section class="glass card">
+        <div class="card-head">
+          <h2 th:text="${filter == 'active' ? 'Active Loans' : (filter == 'overdue' ? 'Overdue Books' : 'All Issues')}">Issues</h2>
+          <span class="faint" th:text="${issues.size()} + ' records'"></span>
+        </div>
+        <div th:if="${issues.isEmpty()}" class="empty"><p>No records found.</p></div>
+        
+        <div class="table-wrap" th:unless="${issues.isEmpty()}">
+          <table>
+            <thead><tr><th>Book</th><th>Member</th><th>Dates</th><th>Status / Fine</th><th>Action</th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${issues}" th:classappend="${i.overdue and i.returnDate == null}?'overdue'">
+              <td><strong th:text="${i.book.title}"></strong></td>
+              <td>
+                 <a th:href="@{/admin/members/{id}(id=${i.user.id})}" th:text="${i.user.fullName}"></a>
+              </td>
+              <td class="faint">
+                 Iss: <span th:text="${#temporals.format(i.issueDate, 'dd MMM yy')}"></span><br>
+                 Due: <span th:text="${#temporals.format(i.dueDate, 'dd MMM yy')}"></span>
+                 <th:block th:if="${i.returnDate != null}">
+                     <br>Ret: <span th:text="${#temporals.format(i.returnDate, 'dd MMM yy')}"></span>
+                 </th:block>
+              </td>
+              <td>
+                 <span th:if="${i.returnDate == null}">
+                     <span th:if="${i.overdue}" class="pill pill-danger" th:text="'Late · ₹' + ${i.currentFine(perDay)}"></span>
+                     <span th:unless="${i.overdue}" class="pill pill-info" th:text="${i.daysLeft} + 'd left'"></span>
+                 </span>
+                 <span th:if="${i.returnDate != null}">
+                     <span th:if="${i.fine == 0}" class="pill pill-success">On time</span>
+                     <span th:if="${i.fine > 0 and i.finePaid}" class="pill pill-muted" th:text="'₹' + ${i.fine} + ' paid'"></span>
+                     <span th:if="${i.fine > 0 and !i.finePaid}" class="pill pill-danger" th:text="'₹' + ${i.fine} + ' unpaid'"></span>
+                 </span>
+              </td>
+              <td>
+                 <form th:if="${i.returnDate == null}" th:action="@{/admin/issues/{id}/return(id=${i.id})}" method="post" 
+                       th:attr="data-confirm='Process return for ' + ${i.book.title} + ' from ' + ${i.user.fullName} + '?'">
+                     <button type="submit" class="btn btn-sm btn-primary">Return</button>
+                 </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="glass card">
+        <div class="card-head"><h2>Active Bookings</h2></div>
+        <div th:if="${bookings.isEmpty()}" class="faint">No active advance bookings.</div>
+        <div class="loan" th:each="r : ${bookings}">
+          <div class="loan-body">
+            <strong th:text="${r.book.title}"></strong>
+            <div class="faint">By: <a th:href="@{/admin/members/{id}(id=${r.user.id})}" th:text="${r.user.fullName}"></a></div>
+            <div class="faint" th:if="${r.status.name() == 'READY'}">Hold until <span th:text="${#temporals.format(r.holdUntil, 'dd MMM')}"></span></div>
+          </div>
+          <div style="text-align:right">
+            <span class="pill" th:text="${r.status}"
+                  th:classappend="${r.status.name()=='READY'}?'pill-success':'pill-warning'"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

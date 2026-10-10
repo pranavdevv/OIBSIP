@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('User Queries')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('messages')}"></header>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="container" style="max-width: 800px">
+  <div class="page-head">
+    <div>
+      <h1>User Queries & Messages 📩</h1>
+      <p>Respond to contact form submissions and support requests.</p>
+    </div>
+  </div>
+
+  <div th:if="${messages.isEmpty()}" class="empty glass card"><p>No messages to display.</p></div>
+
+  <div class="stack">
+      <div th:each="m : ${messages}" class="glass card" style="display:flex; flex-direction:column; gap:1rem">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start">
+              <div>
+                  <h3 style="margin:0" th:text="${m.subject}"></h3>
+                  <div class="faint">
+                      From <strong th:text="${m.name}"></strong> (<span th:text="${m.email}"></span>) · 
+                      <span th:text="${#temporals.format(m.createdAt, 'dd MMM yyyy, HH:mm')}"></span>
+                  </div>
+              </div>
+              <span class="pill" th:classappend="${m.resolved} ? 'pill-success' : 'pill-warning'" th:text="${m.resolved} ? 'Resolved' : 'Open'"></span>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg); border-radius: 6px; white-space: pre-wrap" th:text="${m.message}"></div>
+
+          <div th:if="${m.adminReply}" style="padding: 1rem; background: var(--primary-light, rgba(255,255,255,0.05)); border-left: 3px solid var(--primary); border-radius: 6px;">
+              <strong>Reply sent:</strong>
+              <div style="white-space: pre-wrap; margin-top:0.5rem" th:text="${m.adminReply}"></div>
+          </div>
+
+          <div th:unless="${m.resolved}" style="border-top: 1px solid var(--border); padding-top:1rem; margin-top:0.5rem">
+              <form th:action="@{/admin/messages/{id}/reply(id=${m.id})}" method="post" style="display:flex; flex-direction:column; gap:0.5rem">
+                  <label for="reply" class="faint">Send a reply (optional)</label>
+                  <textarea id="reply" name="reply" class="form-control" rows="3" placeholder="Type your response..."></textarea>
+                  <div style="display:flex; gap:0.5rem; justify-content:flex-end">
+                      <button type="submit" class="btn btn-primary">Mark Resolved & Reply</button>
+                  </div>
+              </form>
+          </div>
+          
+          <div th:if="${m.resolved}" style="text-align:right">
+              <form th:action="@{/admin/messages/{id}/delete(id=${m.id})}" method="post" class="inline"
+                    th:attr="data-confirm='Delete this message?'">
+                  <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger)">Delete Thread</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</main>
+
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>

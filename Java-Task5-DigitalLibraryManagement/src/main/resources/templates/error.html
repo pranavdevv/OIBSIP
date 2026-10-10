@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Something went wrong')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('')}"></header>
+<main class="container auth-wrap">
+  <div class="auth-card glass" style="text-align:center">
+    <div style="font-size:3rem">📚</div>
+    <h1 th:text="${status == 404} ? 'Page not found' : 'Something went wrong'">Error</h1>
+    <p class="muted" th:text="${status == 404} ? 'This shelf seems to be empty.' : 'An unexpected error occurred. Please try again.'"></p>
+    <a th:href="@{/}" class="btn btn-primary">Back to home</a>
+  </div>
+</main>
+<th:block th:replace="~{fragments :: footer}"></th:block>
+</body>
+</html>
