@@ -218,7 +218,11 @@ public class AdminController {
     public String fines(Model model) {
         List<Issue> settled = issues.findWithFines();
         List<Issue> accruing = issues.findByReturnDateIsNullOrderByDueDateAsc().stream().filter(Issue::isOverdue).toList();
+        List<Issue> unpaidSettled = settled.stream().filter(i -> !i.isFinePaid()).toList();
+        List<Issue> paidSettled = settled.stream().filter(Issue::isFinePaid).toList();
         model.addAttribute("settled", settled);
+        model.addAttribute("unpaidSettled", unpaidSettled);
+        model.addAttribute("paidSettled", paidSettled);
         model.addAttribute("accruing", accruing);
         model.addAttribute("perDay", library.getFinePerDay());
         model.addAttribute("unpaidTotal", settled.stream().filter(i -> !i.isFinePaid()).mapToLong(Issue::getFine).sum());

@@ -23,12 +23,12 @@
     <div class="stack">
       <section class="glass card">
         <div class="card-head"><h2>Unpaid Fines (Books Returned)</h2></div>
-        <div th:if="${settled.stream().filter(i -> !i.finePaid).toList().isEmpty()}" class="empty"><p>No unpaid settled fines.</p></div>
-        <div class="table-wrap" th:unless="${settled.stream().filter(i -> !i.finePaid).toList().isEmpty()}">
+        <div th:if="${unpaidSettled.isEmpty()}" class="empty"><p>No unpaid settled fines.</p></div>
+        <div class="table-wrap" th:unless="${unpaidSettled.isEmpty()}">
             <table>
                 <thead><tr><th>Member</th><th>Amount</th><th>Action</th></tr></thead>
                 <tbody>
-                <tr th:each="i : ${settled}" th:if="${!i.finePaid}">
+                <tr th:each="i : ${unpaidSettled}">
                     <td>
                         <strong th:text="${i.user.fullName}"></strong>
                         <div class="faint" th:text="${i.book.title}"></div>
@@ -75,12 +75,12 @@
     <div class="stack">
       <section class="glass card">
         <div class="card-head"><h2>Payment History</h2></div>
-        <div th:if="${settled.stream().filter(i -> i.finePaid).toList().isEmpty()}" class="empty"><p>No payments recorded.</p></div>
-        <div class="table-wrap" th:unless="${settled.stream().filter(i -> i.finePaid).toList().isEmpty()}">
+        <div th:if="${paidSettled.isEmpty()}" class="empty"><p>No payments recorded.</p></div>
+        <div class="table-wrap" th:unless="${paidSettled.isEmpty()}">
             <table>
                 <thead><tr><th>Member</th><th>Paid</th><th>Date</th></tr></thead>
                 <tbody>
-                <tr th:each="i : ${settled}" th:if="${i.finePaid}">
+                <tr th:each="i : ${paidSettled}">
                     <td>
                         <strong th:text="${i.user.fullName}"></strong>
                         <div class="faint" th:text="${i.book.title}"></div>
