@@ -20,7 +20,7 @@
             <div class="faint" th:text="${member.phone}"></div>
             <div style="margin-top: 1rem">
                 <span class="pill" th:classappend="${member.admin} ? 'pill-primary' : 'pill-info'" th:text="${member.role}"></span>
-                <span class="pill pill-danger" th:unless="${member.active}">Deactivated</span>
+                <span class="pill pill-danger" th:unless="${member.enabled}">Deactivated</span>
             </div>
         </div>
         <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem">
@@ -35,8 +35,8 @@
         </div>
         <div style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem; display:flex; gap:0.5rem; flex-direction:column">
             <form th:action="@{/admin/members/{id}/toggle(id=${member.id})}" method="post">
-                <button type="submit" class="btn btn-sm" th:classappend="${member.active} ? 'btn-ghost' : 'btn-success'" style="width:100%"
-                        th:text="${member.active} ? 'Deactivate Account' : 'Reactivate Account'"></button>
+                <button type="submit" class="btn btn-sm" th:classappend="${member.enabled} ? 'btn-ghost' : 'btn-success'" style="width:100%"
+                        th:text="${member.enabled} ? 'Deactivate Account' : 'Reactivate Account'"></button>
             </form>
             <form th:action="@{/admin/members/{id}/delete(id=${member.id})}" method="post"
                   th:attr="data-confirm='Permanently delete ' + ${member.fullName} + '?'">

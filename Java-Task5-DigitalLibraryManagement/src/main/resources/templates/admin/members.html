@@ -39,12 +39,12 @@
           </td>
           <td>
               <span class="pill" th:classappend="${u.admin} ? 'pill-primary' : 'pill-info'" th:text="${u.role}"></span>
-              <span class="pill pill-danger" th:unless="${u.active}">Deactivated</span>
+              <span class="pill pill-danger" th:unless="${u.enabled}">Deactivated</span>
           </td>
-          <td th:text="${loans.get(u.id)}"></td>
+          <td th:text="${loans.get(u.id) != null ? loans.get(u.id) : 0}"></td>
           <td>
-              <span th:if="${fines.get(u.id) > 0}" class="pill pill-danger" th:text="'₹' + ${fines.get(u.id)}"></span>
-              <span th:unless="${fines.get(u.id) > 0}" class="faint">₹0</span>
+              <span th:if="${fines.get(u.id) != null and fines.get(u.id) > 0}" class="pill pill-danger" th:text="'₹' + ${fines.get(u.id)}"></span>
+              <span th:unless="${fines.get(u.id) != null and fines.get(u.id) > 0}" class="faint">₹0</span>
           </td>
           <td>
               <a th:href="@{/admin/members/{id}(id=${u.id})}" class="btn btn-sm btn-ghost">View</a>

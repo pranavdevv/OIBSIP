@@ -55,6 +55,8 @@ public class User {
     public void setRole(Role role) { this.role = role; }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public boolean isActive() { return enabled; }
+    public void setActive(boolean active) { this.enabled = active; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public boolean isAdmin() { return role == Role.ADMIN; }
 
